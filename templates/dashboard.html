@@ -14,13 +14,13 @@
   .live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .container { padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
   .kpi { background: #1a1d27; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
   .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
   .kpi-val { font-size: 24px; font-weight: 700; color: #fff; }
-  .kpi-sub { font-size: 11px; margin-top: 4px; }
-  .green { color: #22c55e; } .red { color: #ef4444; } .amber { color: #f59e0b; } .blue { color: #3b82f6; }
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .green { color: #22c55e; }
+  .blue { color: #3b82f6; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
   .charts-row2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
   .card { background: #1a1d27; border: 1px solid #2d3748; border-radius: 10px; padding: 18px; }
   .card-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px; }
@@ -33,9 +33,9 @@
   td { padding: 9px 10px; border-bottom: 1px solid #1e2330; color: #cbd5e1; }
   tr:hover td { background: #1e2330; }
   .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-Low    { background: #14532d; color: #86efac; }
+  .badge-Low { background: #14532d; color: #86efac; }
   .badge-Medium { background: #78350f; color: #fcd34d; }
-  .badge-High   { background: #7f1d1d; color: #fca5a5; }
+  .badge-High { background: #7f1d1d; color: #fca5a5; }
   .funnel-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .funnel-label { font-size: 12px; color: #94a3b8; width: 100px; text-align: right; }
   .funnel-bar-wrap { flex: 1; background: #0f1117; border-radius: 4px; height: 28px; overflow: hidden; }
@@ -51,24 +51,19 @@
 
 <div class="header">
   <div>
-    <h1><span class="live-dot"></span>Behavioral Analytics — Friction Dashboard</h1>
+    <h1><span class="live-dot"></span>Behavioral Analytics - Friction Dashboard</h1>
   </div>
   <span id="last-updated">Loading...</span>
 </div>
 
 <div class="container">
-
-  <!-- KPI Cards -->
-<!-- KPI Cards -->
-  <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr)">
-    <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-val" id="kTotalSessions">—</div></div>
-    <div class="kpi"><div class="kpi-label">Total users</div><div class="kpi-val" id="kTotalUsers">—</div></div>
-    <div class="kpi"><div class="kpi-label">Conversion rate</div><div class="kpi-val green" id="kConversion">—</div></div>
-    <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-val blue" id="kAvgSession">—</div></div>
-    <div class="kpi"><div class="kpi-label">Error rate</div><div class="kpi-val red" id="kErrorRate">—</div></div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-val" id="kTotalSessions">-</div></div>
+    <div class="kpi"><div class="kpi-label">Total users</div><div class="kpi-val" id="kTotalUsers">-</div></div>
+    <div class="kpi"><div class="kpi-label">Conversion rate</div><div class="kpi-val green" id="kConversion">-</div></div>
+    <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-val blue" id="kAvgSession">-</div></div>
   </div>
 
-  <!-- Row 1: Friction dist + Devices + Errors -->
   <div class="charts-row">
     <div class="card">
       <div class="card-title">Friction distribution</div>
@@ -78,16 +73,11 @@
       <div class="card-title">Sessions by device</div>
       <div class="chart-wrap" style="height:200px"><canvas id="deviceChart"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-title">Error rate by friction</div>
-      <div id="errorBars" style="margin-top:10px"></div>
-    </div>
   </div>
 
-  <!-- Row 2: Trend + Funnel -->
   <div class="charts-row2">
     <div class="card">
-      <div class="card-title">Daily sessions — Jan to May 2024</div>
+      <div class="card-title">Daily sessions by friction</div>
       <div class="trend-filters">
         <button class="trend-btn" onclick="changeTrend(30,this)">30 days</button>
         <button class="trend-btn" onclick="changeTrend(60,this)">60 days</button>
@@ -101,7 +91,6 @@
     </div>
   </div>
 
-  <!-- Session Table -->
   <div class="card">
     <div class="card-title">Sessions</div>
     <div class="filters">
@@ -115,9 +104,11 @@
       <label>Device</label>
       <select id="filterDevice" onchange="loadSessions()">
         <option value="all">All devices</option>
+        <option value="web">Web</option>
         <option value="mobile">Mobile</option>
         <option value="desktop">Desktop</option>
         <option value="tablet">Tablet</option>
+        <option value="unknown">Unknown</option>
       </select>
       <label>Limit</label>
       <select id="filterLimit" onchange="loadSessions()">
@@ -145,7 +136,6 @@
       </table>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -153,10 +143,9 @@ const API = "http://127.0.0.1:5000";
 let frictionChart, deviceChart, trendChart;
 let currentTrendDays = 133;
 
-function fmt(n)  { return Number(n).toLocaleString(); }
-function fmtS(s) { return s >= 60 ? Math.round(s/60) + "m " + (s%60) + "s" : s + "s"; }
+function fmt(n) { return Number(n).toLocaleString(); }
+function fmtS(s) { return s >= 60 ? Math.round(s / 60) + "m " + (s % 60) + "s" : s + "s"; }
 
-// ── Trend period toggle ───────────────────────────────────────────────────────
 function changeTrend(days, btn) {
   currentTrendDays = days;
   document.querySelectorAll(".trend-btn").forEach(b => b.classList.remove("active"));
@@ -164,21 +153,18 @@ function changeTrend(days, btn) {
   loadTrend();
 }
 
-// ── KPIs ──────────────────────────────────────────────────────────────────────
 async function loadKPIs() {
   const d = await fetch(`${API}/api/kpis`).then(r => r.json());
   document.getElementById("kTotalSessions").textContent = fmt(d.total_sessions);
-  document.getElementById("kTotalUsers").textContent    = fmt(d.total_users);
-  document.getElementById("kConversion").textContent    = d.conversion_rate + "%";
-  document.getElementById("kAvgSession").textContent    = fmtS(Math.round(d.avg_session_duration));
-  document.getElementById("kErrorRate").textContent     = d.error_rate + "%";
-  document.getElementById("last-updated").textContent   = "Updated " + new Date().toLocaleTimeString();
+  document.getElementById("kTotalUsers").textContent = fmt(d.total_users);
+  document.getElementById("kConversion").textContent = d.conversion_rate + "%";
+  document.getElementById("kAvgSession").textContent = fmtS(Math.round(d.avg_session_duration));
+  document.getElementById("last-updated").textContent = "Updated " + new Date().toLocaleTimeString();
 }
 
-// ── Friction donut ────────────────────────────────────────────────────────────
 async function loadFriction() {
   const d = await fetch(`${API}/api/friction/summary`).then(r => r.json());
-  const order  = ["Low", "Medium", "High"];
+  const order = ["Low", "Medium", "High"];
   const sorted = order.map(lvl => d.find(x => x.friction_level === lvl) || { friction_level: lvl, sessions: 0 });
   if (frictionChart) frictionChart.destroy();
   frictionChart = new Chart(document.getElementById("frictionChart"), {
@@ -188,11 +174,14 @@ async function loadFriction() {
       datasets: [{
         data: sorted.map(x => x.sessions),
         backgroundColor: ["#22c55e", "#f59e0b", "#ef4444"],
-        borderWidth: 0, hoverOffset: 6
+        borderWidth: 0,
+        hoverOffset: 6
       }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false, cutout: "65%",
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "65%",
       plugins: {
         legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, padding: 16 } },
         tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)} sessions` } }
@@ -201,12 +190,11 @@ async function loadFriction() {
   });
 }
 
-// ── Device chart ──────────────────────────────────────────────────────────────
 async function loadDevices() {
   const d = await fetch(`${API}/api/devices`).then(r => r.json());
   const devices = [...new Set(d.map(x => x.device_type))];
-  const levels  = ["Low", "Medium", "High"];
-  const colors  = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
+  const levels = ["Low", "Medium", "High"];
+  const colors = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
   const datasets = levels.map(lvl => ({
     label: lvl,
     data: devices.map(dev => {
@@ -221,7 +209,8 @@ async function loadDevices() {
     type: "bar",
     data: { labels: devices, datasets },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { labels: { color: "#94a3b8", font: { size: 11 } } } },
       scales: {
         x: { stacked: true, grid: { display: false }, ticks: { color: "#64748b" } },
@@ -231,10 +220,9 @@ async function loadDevices() {
   });
 }
 
-// ── Trend chart ───────────────────────────────────────────────────────────────
 async function loadTrend() {
   const d = await fetch(`${API}/api/trend?days=${currentTrendDays}`).then(r => r.json());
-  const days   = [...new Set(d.map(x => x.day))].sort();
+  const days = [...new Set(d.map(x => x.day))].sort();
   const levels = ["Low", "Medium", "High"];
   const colors = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
   const datasets = levels.map(lvl => ({
@@ -251,7 +239,8 @@ async function loadTrend() {
     type: "bar",
     data: { labels: days, datasets },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { labels: { color: "#94a3b8", font: { size: 11 } } } },
       scales: {
         x: {
@@ -265,9 +254,8 @@ async function loadTrend() {
   });
 }
 
-// ── Funnel ────────────────────────────────────────────────────────────────────
 async function loadFunnel() {
-  const d    = await fetch(`${API}/api/funnel`).then(r => r.json());
+  const d = await fetch(`${API}/api/funnel`).then(r => r.json());
   const colors = ["#3b82f6", "#8b5cf6", "#f59e0b", "#22c55e"];
   document.getElementById("funnelWrap").innerHTML = d.map((s, i) => {
     return `<div class="funnel-row">
@@ -280,29 +268,10 @@ async function loadFunnel() {
   }).join("");
 }
 
-// ── Error bars ────────────────────────────────────────────────────────────────
-async function loadErrors() {
-  const d = await fetch(`${API}/api/errors`).then(r => r.json());
-  const colors = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
-  document.getElementById("errorBars").innerHTML = d.map(row => `
-    <div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:12px;color:#94a3b8">${row.friction_level} friction</span>
-        <span style="font-size:13px;font-weight:600;color:${colors[row.friction_level]}">${row.error_rate}%</span>
-      </div>
-      <div style="background:#0f1117;border-radius:4px;height:8px">
-        <div style="width:${Math.min(row.error_rate, 20) / 20 * 100}%;height:8px;border-radius:4px;background:${colors[row.friction_level]}"></div>
-      </div>
-      <div style="font-size:11px;color:#475569;margin-top:3px">${fmt(row.total_errors)} errors / ${fmt(row.total_events)} events</div>
-    </div>
-  `).join("");
-}
-
-// ── Session table ─────────────────────────────────────────────────────────────
 async function loadSessions() {
   const friction = document.getElementById("filterFriction").value;
-  const device   = document.getElementById("filterDevice").value;
-  const limit    = document.getElementById("filterLimit").value;
+  const device = document.getElementById("filterDevice").value;
+  const limit = document.getElementById("filterLimit").value;
   const d = await fetch(`${API}/api/sessions?friction=${friction}&device=${device}&limit=${limit}`).then(r => r.json());
   const badgeClass = { Low: "badge-Low", Medium: "badge-Medium", High: "badge-High" };
   document.getElementById("sessionTable").innerHTML = d.length === 0
@@ -315,18 +284,17 @@ async function loadSessions() {
       <td>${s.browser}</td>
       <td>${fmtS(s.session_duration)}</td>
       <td>${s.total_events}</td>
-      <td style="color:#22c55e">${s.revenue > 0 ? "₹" + Math.round(s.revenue) : "—"}</td>
+      <td style="color:#22c55e">${s.revenue > 0 ? "Rs " + Math.round(s.revenue) : "-"}</td>
       <td><span class="badge ${badgeClass[s.friction_level]}">${s.friction_level}</span></td>
       <td style="color:#94a3b8">${s.friction_score}</td>
     </tr>
   `).join("");
 }
 
-// ── Load all ──────────────────────────────────────────────────────────────────
 async function loadAll() {
   await Promise.all([
     loadKPIs(), loadFriction(), loadDevices(),
-    loadTrend(), loadFunnel(), loadErrors(), loadSessions()
+    loadTrend(), loadFunnel(), loadSessions()
   ]);
 }
 
@@ -335,5 +303,3 @@ setInterval(loadAll, 30000);
 </script>
 </body>
 </html>
-```
-
