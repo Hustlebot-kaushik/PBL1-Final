@@ -3,303 +3,607 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Friction Detection Dashboard</title>
+<title>Pulseboard Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg: #f7f3eb;
+    --bg-accent: #efe7d8;
+    --panel: rgba(255, 252, 247, 0.92);
+    --panel-soft: rgba(255, 255, 255, 0.6);
+    --ink: #1f2937;
+    --muted: #667085;
+    --line: rgba(31, 41, 55, 0.12);
+    --blue: #2b50d9;
+    --cyan: #1f9bd1;
+    --teal: #1c7f77;
+    --amber: #df7f00;
+    --rose: #c81d4f;
+    --shadow: 0 18px 48px rgba(40, 31, 19, 0.12);
+  }
+
+  body.dark {
+    --bg: #0f1723;
+    --bg-accent: #162132;
+    --panel: rgba(19, 28, 43, 0.94);
+    --panel-soft: rgba(255, 255, 255, 0.03);
+    --ink: #eef2ff;
+    --muted: #9aa7bd;
+    --line: rgba(148, 163, 184, 0.16);
+    --blue: #5b7cff;
+    --cyan: #4db5e8;
+    --teal: #2bc0b0;
+    --amber: #f59e0b;
+    --rose: #fb5b84;
+    --shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; }
-  .header { background: #1a1d27; border-bottom: 1px solid #2d3748; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 18px; font-weight: 600; color: #fff; }
-  .header span { font-size: 12px; color: #64748b; }
-  .live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  .container { padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .kpi { background: #1a1d27; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
-  .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-  .kpi-val { font-size: 24px; font-weight: 700; color: #fff; }
-  .green { color: #22c55e; }
-  .blue { color: #3b82f6; }
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .charts-row2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .card { background: #1a1d27; border: 1px solid #2d3748; border-radius: 10px; padding: 18px; }
-  .card-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px; }
-  .chart-wrap { position: relative; }
-  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-  .filters label { font-size: 12px; color: #64748b; }
-  select { background: #0f1117; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 8px 10px; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #2d3748; }
-  td { padding: 9px 10px; border-bottom: 1px solid #1e2330; color: #cbd5e1; }
-  tr:hover td { background: #1e2330; }
-  .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-Low { background: #14532d; color: #86efac; }
-  .badge-Medium { background: #78350f; color: #fcd34d; }
-  .badge-High { background: #7f1d1d; color: #fca5a5; }
-  .funnel-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .funnel-label { font-size: 12px; color: #94a3b8; width: 100px; text-align: right; }
-  .funnel-bar-wrap { flex: 1; background: #0f1117; border-radius: 4px; height: 28px; overflow: hidden; }
-  .funnel-bar { height: 28px; border-radius: 4px; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600; color: #fff; transition: width 1s ease; }
-  .funnel-pct { font-size: 12px; color: #64748b; width: 40px; }
-  .loading { text-align: center; color: #64748b; padding: 40px; font-size: 13px; }
-  .trend-filters { display: flex; gap: 8px; margin-bottom: 12px; }
-  .trend-btn { background: #0f1117; border: 1px solid #2d3748; color: #64748b; border-radius: 6px; padding: 4px 12px; font-size: 11px; cursor: pointer; }
-  .trend-btn.active { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+  body {
+    font-family: "IBM Plex Sans", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(223, 127, 0, 0.14), transparent 24%),
+      radial-gradient(circle at top right, rgba(28, 127, 119, 0.12), transparent 26%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-accent) 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    transition: background .25s ease, color .25s ease;
+  }
+  .shell { max-width: 1480px; margin: 0 auto; padding: 22px; }
+  .topbar, .section-head, .toolbar, .explain-top, .table-filters { display: flex; gap: 14px; }
+  .topbar, .section-head, .toolbar, .explain-top { justify-content: space-between; align-items: center; }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  h1, h2, h3, .kpi-value, .pill-number, .explain-score {
+    font-family: "Space Grotesk", sans-serif;
+  }
+  .hero, .card, .kpi, .stat, .feed-item, .driver-item, .rec-item, .watch-item, .source-pill, .narrative {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .hero, .card { border-radius: 28px; }
+  .hero { padding: 20px; margin-bottom: 18px; }
+  .hero-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(420px, 0.85fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .hero-copy { max-width: 760px; }
+  .hero h1 {
+    font-size: clamp(1.8rem, 2.4vw, 3rem);
+    line-height: 1.02;
+    margin: 8px 0 10px;
+    max-width: 760px;
+  }
+  .hero p { color: var(--muted); font-size: .98rem; line-height: 1.55; max-width: 760px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+  .top-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button, select, input {
+    font: inherit;
+    color: var(--ink);
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 11px 14px;
+  }
+  button { cursor: pointer; font-weight: 600; }
+  .btn-primary { background: var(--ink); color: var(--bg); border-color: transparent; }
+  .btn-secondary { background: var(--panel-soft); }
+  .toggle { min-width: 120px; }
+  .live-chip, .source-pill, .badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; font-weight: 700;
+  }
+  .live-chip { background: rgba(28, 127, 119, .14); color: var(--teal); }
+  .dot { width: 10px; height: 10px; border-radius: 999px; background: currentColor; }
+  .dataset-pill { color: var(--blue); background: rgba(43, 80, 217, .12); }
+  .live-pill { color: var(--teal); background: rgba(28, 127, 119, .12); }
+  .grid-5, .grid-2, .stats-row, .dual-grid, .explain-grid {
+    display: grid; gap: 16px;
+  }
+  .stats-row { grid-template-columns: repeat(2, 1fr); margin-top: 0; }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); margin-bottom: 18px; }
+  .grid-2 { grid-template-columns: 1.2fr .8fr; margin-bottom: 18px; }
+  .dual-grid { grid-template-columns: 1.15fr .85fr; margin-bottom: 18px; }
+  .explain-grid { grid-template-columns: .85fr 1.15fr; }
+  .card { padding: 22px; }
+  .stat, .kpi { border-radius: 20px; padding: 16px; }
+  .stat strong, .kpi-value { display: block; margin-top: 8px; font-size: 1.8rem; }
+  .section-head { margin-bottom: 16px; }
+  .section-head p { color: var(--muted); margin-top: 4px; }
+  .chart-wrap { position: relative; min-height: 260px; }
+  .chart-wrap.sm { min-height: 210px; }
+  .funnel-list, .feed-list, .watch-list, .driver-list, .rec-list { display: grid; gap: 12px; }
+  .funnel-row { display: grid; grid-template-columns: 110px 1fr 58px; gap: 12px; align-items: center; }
+  .funnel-track { height: 34px; background: var(--panel-soft); border-radius: 999px; overflow: hidden; }
+  .funnel-fill { height: 100%; display: flex; align-items: center; padding-left: 14px; color: white; font-weight: 700; border-radius: 999px; }
+  .feed-item, .watch-item, .driver-item, .rec-item, .narrative { border-radius: 20px; padding: 16px; }
+  .feed-meta, .muted, .helper { color: var(--muted); line-height: 1.6; }
+  .badge-Low { color: var(--teal); background: rgba(28, 127, 119, .15); }
+  .badge-Medium { color: var(--amber); background: rgba(223, 127, 0, .16); }
+  .badge-High { color: var(--rose); background: rgba(200, 29, 79, .16); }
+  .table-wrap { overflow: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; }
+  .empty {
+    border: 1px dashed var(--line);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    background: var(--panel-soft);
+  }
+  .explain-input { min-width: 220px; }
+  .explain-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  .score-box { border-radius: 22px; padding: 18px; background: var(--panel-soft); border: 1px solid var(--line); }
+  .explain-score { font-size: 2rem; margin-top: 8px; }
+  .table-filters { flex-wrap: wrap; margin-bottom: 14px; }
+  .legend-note { color: var(--muted); font-size: .92rem; }
+  @media (max-width: 1180px) {
+    .grid-5 { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .dual-grid, .explain-grid { grid-template-columns: 1fr; }
+    .stats-row, .hero-main { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .shell { padding: 12px; }
+    .topbar, .toolbar, .section-head, .explain-top { flex-direction: column; align-items: stretch; }
+    .grid-5, .stats-row, .explain-summary, .funnel-row { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2rem; }
+  }
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div>
-    <h1><span class="live-dot"></span>Behavioral Analytics - Friction Dashboard</h1>
-  </div>
-  <span id="last-updated">Loading...</span>
-</div>
-
-<div class="container">
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">Total sessions</div><div class="kpi-val" id="kTotalSessions">-</div></div>
-    <div class="kpi"><div class="kpi-label">Total users</div><div class="kpi-val" id="kTotalUsers">-</div></div>
-    <div class="kpi"><div class="kpi-label">Conversion rate</div><div class="kpi-val green" id="kConversion">-</div></div>
-    <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-val blue" id="kAvgSession">-</div></div>
-  </div>
-
-  <div class="charts-row">
-    <div class="card">
-      <div class="card-title">Friction distribution</div>
-      <div class="chart-wrap" style="height:200px"><canvas id="frictionChart"></canvas></div>
+<div class="shell">
+  <div class="topbar" style="margin-bottom:14px;">
+    <div>
+      <div class="eyebrow">Pulseboard</div>
+      <div class="helper">Live website session analytics powered by a model trained on the clickstream dataset</div>
     </div>
-    <div class="card">
-      <div class="card-title">Sessions by device</div>
-      <div class="chart-wrap" style="height:200px"><canvas id="deviceChart"></canvas></div>
+    <div class="top-actions">
+      <button id="themeToggle" class="toggle btn-secondary" onclick="toggleTheme()">Dark mode</button>
+      <div class="live-chip"><span class="dot"></span><span id="lastUpdated">Syncing...</span></div>
     </div>
   </div>
 
-  <div class="charts-row2">
-    <div class="card">
-      <div class="card-title">Daily sessions by friction</div>
-      <div class="trend-filters">
-        <button class="trend-btn" onclick="changeTrend(30,this)">30 days</button>
-        <button class="trend-btn" onclick="changeTrend(60,this)">60 days</button>
-        <button class="trend-btn active" onclick="changeTrend(133,this)">All data</button>
+  <section class="hero">
+    <div class="hero-main">
+      <div class="hero-copy">
+        <div class="eyebrow">Unified Experience Intelligence</div>
+        <h1>Live website session intelligence.</h1>
+        <p>
+          Everything below is based only on tracked website sessions. The model was trained on the clickstream dataset, but the analytics shown here are live-only.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="seedDemoJourney()">Send Demo Journey</button>
+          <button class="btn-secondary" onclick="document.getElementById('explainSessionId').focus()">Inspect Session</button>
+        </div>
       </div>
-      <div class="chart-wrap" style="height:180px"><canvas id="trendChart"></canvas></div>
+      <div>
+        <div class="stats-row">
+          <div class="stat"><div class="eyebrow">Live sessions</div><strong id="liveActiveSessions">0</strong></div>
+          <div class="stat"><div class="eyebrow">Events window</div><strong id="liveEventsWindow">0</strong></div>
+          <div class="stat"><div class="eyebrow">High risk live</div><strong id="liveHighRisk">0</strong></div>
+          <div class="stat"><div class="eyebrow">Live purchases</div><strong id="livePurchaseSessions">0</strong></div>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">Conversion funnel</div>
-      <div id="funnelWrap" style="margin-top:8px"></div>
-    </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="card-title">Sessions</div>
-    <div class="filters">
-      <label>Friction</label>
-      <select id="filterFriction" onchange="loadSessions()">
-        <option value="all">All</option>
-        <option value="High">High</option>
-        <option value="Medium">Medium</option>
-        <option value="Low">Low</option>
-      </select>
-      <label>Device</label>
-      <select id="filterDevice" onchange="loadSessions()">
-        <option value="all">All devices</option>
-        <option value="web">Web</option>
-        <option value="mobile">Mobile</option>
-        <option value="desktop">Desktop</option>
-        <option value="tablet">Tablet</option>
-        <option value="unknown">Unknown</option>
-      </select>
-      <label>Limit</label>
-      <select id="filterLimit" onchange="loadSessions()">
-        <option value="25">25</option>
-        <option value="50" selected>50</option>
-        <option value="100">100</option>
-      </select>
+  <section class="card" style="margin-bottom:18px;">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Live Session Analytics</div>
+        <h2>These KPIs and charts are built only from sessions tracked on the website.</h2>
+      </div>
+      <div class="source-pill live-pill">Live event stream</div>
     </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead>
-          <tr>
-            <th>Session ID</th>
-            <th>User ID</th>
-            <th>Device</th>
-            <th>Browser</th>
-            <th>Duration</th>
-            <th>Events</th>
-            <th>Revenue</th>
-            <th>Friction</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody id="sessionTable"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody>
-      </table>
+    <div class="grid-5">
+      <div class="kpi"><div class="eyebrow">Total sessions</div><span class="kpi-value" id="kTotalSessions">-</span></div>
+      <div class="kpi"><div class="eyebrow">Total users</div><span class="kpi-value" id="kTotalUsers">-</span></div>
+      <div class="kpi"><div class="eyebrow">Conversion rate</div><span class="kpi-value" id="kConversion">-</span></div>
+      <div class="kpi"><div class="eyebrow">Avg session duration</div><span class="kpi-value" id="kAvgSession">-</span></div>
+      <div class="kpi"><div class="eyebrow">Error rate</div><span class="kpi-value" id="kErrorRate">-</span></div>
     </div>
-  </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-head"><div><div class="eyebrow">Model readout</div><h3>Live friction distribution</h3></div></div>
+        <div class="chart-wrap sm"><canvas id="frictionChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><div class="eyebrow">Journey drop-off</div><h3>Conversion funnel</h3></div></div>
+        <div id="funnelWrap" class="funnel-list"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-head"><div><div class="eyebrow">Behavior mix</div><h3>Sessions by device and friction</h3></div></div>
+        <div class="chart-wrap"><canvas id="deviceChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><div class="eyebrow">Live movement</div><h3>Live sessions by day and friction</h3></div></div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dual-grid">
+    <div class="card">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Live Event Stream</div>
+          <h2>These sections update from the shopping site via <code>/api/track</code>.</h2>
+          <p>If there are only a few tracked events, the charts will look sparse until more website activity is captured.</p>
+        </div>
+        <div class="source-pill live-pill">Website events</div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="section-head"><div><div class="eyebrow">Timeline</div><h3>Event and error timeline</h3></div></div>
+        <div class="chart-wrap sm"><canvas id="liveTimelineChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><div class="eyebrow">Live feed</div><h3>Recent tracked actions</h3></div></div>
+        <div id="liveFeed" class="feed-list"><div class="empty">No live events yet.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><div><div class="eyebrow">Live watchlist</div><h2>High-risk live sessions now</h2></div></div>
+      <div id="liveRiskList" class="watch-list"><div class="empty">Waiting for tracked sessions.</div></div>
+    </div>
+  </section>
+
+  <section class="dual-grid">
+    <div class="card">
+      <div class="section-head"><div><div class="eyebrow">Tracker playground</div><h2>Send a live event</h2><p>Useful when you want to test the live panels without browsing the shop.</p></div></div>
+      <div class="table-filters">
+        <input id="trackSessionId" type="number" value="91001" placeholder="Session ID">
+        <input id="trackUserId" type="text" value="guest-91001" placeholder="User ID">
+        <select id="trackEventType">
+          <option value="page_view">page_view</option>
+          <option value="product_view">product_view</option>
+          <option value="search">search</option>
+          <option value="checkout">checkout</option>
+          <option value="purchase">purchase</option>
+          <option value="retry">retry</option>
+          <option value="backtrack">backtrack</option>
+        </select>
+        <input id="trackPageName" type="text" value="/products/featured" placeholder="Page name">
+        <select id="trackDeviceType">
+          <option value="mobile">mobile</option>
+          <option value="desktop">desktop</option>
+          <option value="tablet">tablet</option>
+          <option value="web">web</option>
+        </select>
+        <input id="trackBrowser" type="text" value="Chrome" placeholder="Browser">
+        <input id="trackAmount" type="number" step="0.01" value="0" placeholder="Amount">
+        <select id="trackErrorFlag"><option value="0">error 0</option><option value="1">error 1</option></select>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="sendTrackedEvent()">Track event</button>
+        <button class="btn-secondary" onclick="seedDemoJourney()">Seed demo journey</button>
+      </div>
+      <div class="helper" id="trackStatus" style="margin-top:12px;">Ready to ingest events.</div>
+      <div class="helper" id="trackPredictionLevel" style="margin-top:4px;">No live prediction yet.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><div><div class="eyebrow">Tracked sessions</div><h2>Live website session table</h2></div></div>
+      <div class="table-filters">
+        <select id="filterFriction" onchange="loadSessions()"><option value="all">All friction</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select>
+        <select id="filterDevice" onchange="loadSessions()"><option value="all">All devices</option><option value="web">Web</option><option value="mobile">Mobile</option><option value="desktop">Desktop</option><option value="tablet">Tablet</option><option value="unknown">Unknown</option></select>
+        <select id="filterLimit" onchange="loadSessions()"><option value="25">25 rows</option><option value="50" selected>50 rows</option><option value="100">100 rows</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Session</th><th>User</th><th>Device</th><th>Browser</th><th>Duration</th><th>Events</th><th>Revenue</th><th>Friction</th><th>Score</th><th>Explain</th></tr>
+          </thead>
+          <tbody id="sessionTable"><tr><td colspan="10"><div class="empty">Loading sessions...</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Explainable AI</div>
+        <h2>Why the model rated this session this way</h2>
+        <p>Explains the friction prediction for tracked website sessions.</p>
+      </div>
+    </div>
+    <div class="explain-grid">
+      <div>
+        <div class="explain-top">
+          <input id="explainSessionId" class="explain-input" type="number" placeholder="Enter session ID">
+          <button class="btn-primary" onclick="loadExplanation()">Load explanation</button>
+        </div>
+        <div class="helper" id="explainStatus" style="margin-top:10px;">Choose a live session from the table or the watchlist.</div>
+        <div class="explain-summary">
+          <div class="score-box"><div class="eyebrow">Friction score</div><div class="explain-score" id="expScore">-</div></div>
+          <div class="score-box"><div class="eyebrow">Predicted level</div><div class="explain-score" id="expLevel">-</div></div>
+          <div class="score-box"><div class="eyebrow">Source</div><div class="explain-score" id="expSource">-</div></div>
+        </div>
+        <div class="narrative" style="margin-top:14px;">
+          <strong style="display:block;margin-bottom:8px;">Model narrative</strong>
+          <div id="expNarrative" class="helper">Explanation will appear here.</div>
+        </div>
+      </div>
+      <div>
+        <div class="section-head"><div><div class="eyebrow">Top friction drivers</div></div></div>
+        <div id="driverList" class="driver-list"><div class="empty">No explanation loaded yet.</div></div>
+        <div class="section-head" style="margin-top:16px;"><div><div class="eyebrow">Recommended actions</div></div></div>
+        <div id="recommendationList" class="rec-list"><div class="empty">No recommendations yet.</div></div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script>
-const API = "http://127.0.0.1:5000";
-let frictionChart, deviceChart, trendChart;
-let currentTrendDays = 133;
+const API = "";
+const COLORS = { low: "#1c7f77", medium: "#df7f00", high: "#c81d4f", blue: "#2b50d9", cyan: "#1f9bd1", muted: "#667085" };
+let frictionChart, deviceChart, trendChart, liveTimelineChart;
 
-function fmt(n) { return Number(n).toLocaleString(); }
-function fmtS(s) { return s >= 60 ? Math.round(s / 60) + "m " + (s % 60) + "s" : s + "s"; }
-
-function changeTrend(days, btn) {
-  currentTrendDays = days;
-  document.querySelectorAll(".trend-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  loadTrend();
+function fmt(n) { return Number(n || 0).toLocaleString(); }
+function fmtCurrency(n) { return n > 0 ? `Rs ${Math.round(n).toLocaleString()}` : "-"; }
+function fmtDuration(seconds) { const s = Math.max(Number(seconds || 0), 0); if (s < 60) return `${s}s`; return `${Math.floor(s / 60)}m ${s % 60}s`; }
+async function fetchJSON(url, options) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    let message = "Request failed";
+    try { const payload = await response.json(); message = payload.error || message; } catch (_) {}
+    throw new Error(message);
+  }
+  return response.json();
 }
 
+function toggleTheme() {
+  const body = document.body;
+  const dark = !body.classList.contains("dark");
+  body.classList.toggle("dark", dark);
+  localStorage.setItem("pulseboard_theme", dark ? "dark" : "light");
+  document.getElementById("themeToggle").textContent = dark ? "Light mode" : "Dark mode";
+}
+
+function applySavedTheme() {
+  const theme = localStorage.getItem("pulseboard_theme");
+  if (theme === "dark") {
+    document.body.classList.add("dark");
+    document.getElementById("themeToggle").textContent = "Light mode";
+  }
+}
+
+function updateTimestamp() { document.getElementById("lastUpdated").textContent = `Live refresh ${new Date().toLocaleTimeString()}`; }
+
 async function loadKPIs() {
-  const d = await fetch(`${API}/api/kpis`).then(r => r.json());
+  const d = await fetchJSON(`${API}/api/kpis`);
   document.getElementById("kTotalSessions").textContent = fmt(d.total_sessions);
   document.getElementById("kTotalUsers").textContent = fmt(d.total_users);
-  document.getElementById("kConversion").textContent = d.conversion_rate + "%";
-  document.getElementById("kAvgSession").textContent = fmtS(Math.round(d.avg_session_duration));
-  document.getElementById("last-updated").textContent = "Updated " + new Date().toLocaleTimeString();
+  document.getElementById("kConversion").textContent = `${Number(d.conversion_rate || 0).toFixed(2)}%`;
+  document.getElementById("kAvgSession").textContent = fmtDuration(Math.round(d.avg_session_duration || 0));
+  document.getElementById("kErrorRate").textContent = `${Number(d.error_rate || 0).toFixed(2)}%`;
 }
 
 async function loadFriction() {
-  const d = await fetch(`${API}/api/friction/summary`).then(r => r.json());
-  const order = ["Low", "Medium", "High"];
-  const sorted = order.map(lvl => d.find(x => x.friction_level === lvl) || { friction_level: lvl, sessions: 0 });
+  const d = await fetchJSON(`${API}/api/friction/summary`);
+  const levels = ["Low", "Medium", "High"];
+  const sorted = levels.map(level => d.find(x => x.friction_level === level) || { friction_level: level, sessions: 0 });
   if (frictionChart) frictionChart.destroy();
   frictionChart = new Chart(document.getElementById("frictionChart"), {
     type: "doughnut",
-    data: {
-      labels: sorted.map(x => x.friction_level),
-      datasets: [{
-        data: sorted.map(x => x.sessions),
-        backgroundColor: ["#22c55e", "#f59e0b", "#ef4444"],
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "65%",
-      plugins: {
-        legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, padding: 16 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.parsed)} sessions` } }
-      }
-    }
+    data: { labels: sorted.map(x => x.friction_level), datasets: [{ data: sorted.map(x => x.sessions), backgroundColor: [COLORS.low, COLORS.medium, COLORS.high], borderWidth: 0 }] },
+    options: { maintainAspectRatio: false, cutout: "68%", plugins: { legend: { position: "bottom" } } }
   });
 }
 
 async function loadDevices() {
-  const d = await fetch(`${API}/api/devices`).then(r => r.json());
+  const d = await fetchJSON(`${API}/api/devices`);
   const devices = [...new Set(d.map(x => x.device_type))];
   const levels = ["Low", "Medium", "High"];
-  const colors = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
-  const datasets = levels.map(lvl => ({
-    label: lvl,
-    data: devices.map(dev => {
-      const row = d.find(x => x.device_type === dev && x.friction_level === lvl);
-      return row ? row.sessions : 0;
-    }),
-    backgroundColor: colors[lvl],
-    borderRadius: 4,
-  }));
   if (deviceChart) deviceChart.destroy();
   deviceChart = new Chart(document.getElementById("deviceChart"), {
     type: "bar",
-    data: { labels: devices, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: "#94a3b8", font: { size: 11 } } } },
-      scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { color: "#64748b" } },
-        y: { stacked: true, grid: { color: "#1e2330" }, ticks: { color: "#64748b" } }
-      }
-    }
+    data: {
+      labels: devices,
+      datasets: levels.map(level => ({
+        label: level,
+        data: devices.map(device => (d.find(x => x.device_type === device && x.friction_level === level) || { sessions: 0 }).sessions),
+        backgroundColor: level === "Low" ? COLORS.low : level === "Medium" ? COLORS.medium : COLORS.high,
+        borderRadius: 8
+      }))
+    },
+    options: { maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
   });
 }
 
 async function loadTrend() {
-  const d = await fetch(`${API}/api/trend?days=${currentTrendDays}`).then(r => r.json());
+  const d = await fetchJSON(`${API}/api/trend?days=14`);
   const days = [...new Set(d.map(x => x.day))].sort();
   const levels = ["Low", "Medium", "High"];
-  const colors = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
-  const datasets = levels.map(lvl => ({
-    label: lvl,
-    data: days.map(day => {
-      const row = d.find(x => x.day === day && x.friction_level === lvl);
-      return row ? row.sessions : 0;
-    }),
-    backgroundColor: colors[lvl],
-    borderRadius: 2,
-  }));
   if (trendChart) trendChart.destroy();
   trendChart = new Chart(document.getElementById("trendChart"), {
     type: "bar",
-    data: { labels: days, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: "#94a3b8", font: { size: 11 } } } },
-      scales: {
-        x: {
-          stacked: true,
-          grid: { display: false },
-          ticks: { color: "#64748b", font: { size: 9 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 20 }
-        },
-        y: { stacked: true, grid: { color: "#1e2330" }, ticks: { color: "#64748b" } }
-      }
-    }
+    data: {
+      labels: days,
+      datasets: levels.map(level => ({
+        label: level,
+        data: days.map(day => (d.find(x => x.day === day && x.friction_level === level) || { sessions: 0 }).sessions),
+        backgroundColor: level === "Low" ? COLORS.low : level === "Medium" ? COLORS.medium : COLORS.high,
+        borderRadius: 6
+      }))
+    },
+    options: { maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
   });
 }
 
 async function loadFunnel() {
-  const d = await fetch(`${API}/api/funnel`).then(r => r.json());
-  const colors = ["#3b82f6", "#8b5cf6", "#f59e0b", "#22c55e"];
-  document.getElementById("funnelWrap").innerHTML = d.map((s, i) => {
-    return `<div class="funnel-row">
-      <div class="funnel-label">${s.stage}</div>
-      <div class="funnel-bar-wrap">
-        <div class="funnel-bar" style="width:${s.pct}%;background:${colors[i]}">${fmt(s.count)}</div>
-      </div>
-      <div class="funnel-pct">${s.pct}%</div>
-    </div>`;
-  }).join("");
+  const d = await fetchJSON(`${API}/api/funnel`);
+  const colors = [COLORS.blue, COLORS.cyan, COLORS.medium, COLORS.low];
+  document.getElementById("funnelWrap").innerHTML = d.length ? d.map((s, i) => `
+    <div class="funnel-row">
+      <div>${s.stage}</div>
+      <div class="funnel-track"><div class="funnel-fill" style="width:${s.pct}%;background:${colors[i]}">${fmt(s.count)}</div></div>
+      <div>${s.pct}%</div>
+    </div>`).join("") : `<div class="empty">No funnel data available.</div>`;
 }
 
 async function loadSessions() {
   const friction = document.getElementById("filterFriction").value;
   const device = document.getElementById("filterDevice").value;
   const limit = document.getElementById("filterLimit").value;
-  const d = await fetch(`${API}/api/sessions?friction=${friction}&device=${device}&limit=${limit}`).then(r => r.json());
+  const d = await fetchJSON(`${API}/api/sessions?friction=${encodeURIComponent(friction)}&device=${encodeURIComponent(device)}&limit=${limit}`);
   const badgeClass = { Low: "badge-Low", Medium: "badge-Medium", High: "badge-High" };
-  document.getElementById("sessionTable").innerHTML = d.length === 0
-    ? `<tr><td colspan="9" class="loading">No sessions found</td></tr>`
-    : d.map(s => `
+  document.getElementById("sessionTable").innerHTML = d.length ? d.map(s => `
     <tr>
-      <td style="color:#60a5fa">#${s.session_id}</td>
-      <td>${s.user_id}</td>
-      <td>${s.device_type}</td>
-      <td>${s.browser}</td>
-      <td>${fmtS(s.session_duration)}</td>
-      <td>${s.total_events}</td>
-      <td style="color:#22c55e">${s.revenue > 0 ? "Rs " + Math.round(s.revenue) : "-"}</td>
-      <td><span class="badge ${badgeClass[s.friction_level]}">${s.friction_level}</span></td>
-      <td style="color:#94a3b8">${s.friction_score}</td>
-    </tr>
-  `).join("");
+      <td>#${s.session_id}</td><td>${s.user_id}</td><td>${s.device_type}</td><td>${s.browser}</td>
+      <td>${fmtDuration(s.session_duration)}</td><td>${fmt(s.total_events)}</td><td>${fmtCurrency(s.revenue)}</td>
+      <td><span class="badge ${badgeClass[s.friction_level] || ""}">${s.friction_level}</span></td>
+      <td>${Number(s.friction_score || 0).toFixed(4)}</td>
+      <td><button class="btn-secondary" onclick="inspectSession(${s.session_id})">Explain</button></td>
+    </tr>`).join("") : `<tr><td colspan="10"><div class="empty">No sessions match these filters.</div></td></tr>`;
 }
 
-async function loadAll() {
-  await Promise.all([
-    loadKPIs(), loadFriction(), loadDevices(),
-    loadTrend(), loadFunnel(), loadSessions()
-  ]);
+async function loadLiveOverview() {
+  const d = await fetchJSON(`${API}/api/live/overview`);
+  document.getElementById("liveActiveSessions").textContent = fmt(d.active_sessions);
+  document.getElementById("liveEventsWindow").textContent = fmt(d.events_last_window);
+  document.getElementById("liveHighRisk").textContent = fmt(d.high_risk_live_sessions);
+  document.getElementById("livePurchaseSessions").textContent = fmt(d.purchase_sessions);
 }
 
-loadAll();
-setInterval(loadAll, 30000);
+async function loadLiveTimeline() {
+  const d = await fetchJSON(`${API}/api/live/timeseries?minutes=30`);
+  if (liveTimelineChart) liveTimelineChart.destroy();
+  liveTimelineChart = new Chart(document.getElementById("liveTimelineChart"), {
+    type: "line",
+    data: {
+      labels: d.map(x => x.bucket ? x.bucket.slice(11) : ""),
+      datasets: [
+        { label: "Events", data: d.map(x => x.total_events), borderColor: COLORS.blue, backgroundColor: "rgba(43,80,217,.12)", fill: true, tension: .35 },
+        { label: "Errors", data: d.map(x => x.total_errors), borderColor: COLORS.high, backgroundColor: "rgba(200,29,79,.12)", fill: true, tension: .35 }
+      ]
+    },
+    options: { maintainAspectRatio: false }
+  });
+}
+
+async function loadLiveFeed() {
+  const d = await fetchJSON(`${API}/api/live/feed?limit=8`);
+  document.getElementById("liveFeed").innerHTML = d.length ? d.map(item => `
+    <div class="feed-item">
+      <strong>${item.event_type} on ${item.page_name}</strong>
+      <div class="feed-meta">Session #${item.session_id} | ${item.device_type} | ${item.browser}</div>
+      <div class="feed-meta">${item.event_time}${item.error_flag ? " | error captured" : ""}${Number(item.amount || 0) > 0 ? ` | ${fmtCurrency(item.amount)}` : ""}</div>
+    </div>`).join("") : `<div class="empty">No live events yet.</div>`;
+}
+
+async function loadLiveRiskSessions() {
+  const d = await fetchJSON(`${API}/api/live/sessions?limit=6`);
+  const badgeClass = { Low: "badge-Low", Medium: "badge-Medium", High: "badge-High" };
+  document.getElementById("liveRiskList").innerHTML = d.length ? d.map(item => `
+    <div class="watch-item">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+        <strong>Session #${item.session_id}</strong>
+        <span class="badge ${badgeClass[item.friction_level] || ""}">${item.friction_level}</span>
+      </div>
+      <div class="feed-meta" style="margin-top:8px;">${item.device_type} | ${item.browser}</div>
+      <div class="feed-meta">Score ${Number(item.friction_score || 0).toFixed(4)} | ${fmt(item.total_clicks)} events | ${fmt(item.total_errors)} errors</div>
+      <div style="margin-top:12px;"><button class="btn-secondary" onclick="inspectSession(${item.session_id})">Open explanation</button></div>
+    </div>`).join("") : `<div class="empty">Waiting for tracked sessions.</div>`;
+}
+
+function renderExplanation(data) {
+  document.getElementById("expScore").textContent = Number(data.friction_score || 0).toFixed(4);
+  document.getElementById("expLevel").textContent = data.friction_level || "-";
+  document.getElementById("expSource").textContent = data.source || "-";
+  document.getElementById("expNarrative").textContent = data.narrative || "No narrative available.";
+  let statusText = `Session #${data.session_id} loaded.`;
+  if (data.friction_level === "High") {
+    statusText = `Session #${data.session_id} is high-friction with ${data.probabilities.High.toFixed(4)} high-friction probability.`;
+  } else if (data.friction_level === "Medium") {
+    statusText = `Session #${data.session_id} is medium-friction with ${data.probabilities.Medium.toFixed(4)} medium-friction probability.`;
+  } else {
+    statusText = `Session #${data.session_id} is currently low-friction with ${data.probabilities.Low.toFixed(4)} low-friction probability.`;
+  }
+  document.getElementById("explainStatus").textContent = statusText;
+  document.getElementById("driverList").innerHTML = data.top_drivers && data.top_drivers.length ? data.top_drivers.map(driver => `
+    <div class="driver-item">
+      <strong>${driver.label}</strong>
+      <div class="feed-meta">${driver.why}</div>
+      <div class="feed-meta">Value ${driver.value} vs benchmark ${driver.benchmark} | impact ${driver.impact}</div>
+    </div>`).join("") : `<div class="empty">No strong friction drivers detected.</div>`;
+  document.getElementById("recommendationList").innerHTML = data.recommendations && data.recommendations.length ? data.recommendations.map(item => `
+    <div class="rec-item"><strong>Recommended move</strong><div class="helper">${item}</div></div>`).join("") : `<div class="empty">No recommendations available.</div>`;
+}
+
+async function loadExplanation(sessionId) {
+  const target = sessionId || document.getElementById("explainSessionId").value;
+  if (!target) { document.getElementById("explainStatus").textContent = "Enter a session ID to inspect."; return; }
+  try {
+    const data = await fetchJSON(`${API}/api/explain/${target}`);
+    document.getElementById("explainSessionId").value = target;
+    renderExplanation(data);
+  } catch (error) {
+    document.getElementById("explainStatus").textContent = error.message;
+  }
+}
+
+function inspectSession(sessionId) { document.getElementById("explainSessionId").value = sessionId; loadExplanation(sessionId); }
+
+async function sendTrackedEvent(payload) {
+  const eventPayload = payload || {
+    session_id: Number(document.getElementById("trackSessionId").value),
+    user_id: document.getElementById("trackUserId").value,
+    event_type: document.getElementById("trackEventType").value,
+    page_name: document.getElementById("trackPageName").value,
+    device_type: document.getElementById("trackDeviceType").value,
+    browser: document.getElementById("trackBrowser").value,
+    amount: Number(document.getElementById("trackAmount").value || 0),
+    error_flag: Number(document.getElementById("trackErrorFlag").value)
+  };
+  try {
+    const result = await fetchJSON(`${API}/api/track`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(eventPayload) });
+    document.getElementById("trackStatus").textContent = `Tracked ${eventPayload.event_type} for session #${result.session_id}.`;
+    document.getElementById("trackPredictionLevel").textContent = result.prediction ? `Predicted ${result.prediction.friction_level} friction at score ${Number(result.prediction.friction_score).toFixed(4)}.` : "Event stored.";
+    if (result.prediction) renderExplanation(result.prediction);
+    await loadLiveBlock();
+  } catch (error) {
+    document.getElementById("trackStatus").textContent = error.message;
+  }
+}
+
+async function seedDemoJourney() {
+  const baseSession = Number(document.getElementById("trackSessionId").value || 91001);
+  const common = { session_id: baseSession, user_id: document.getElementById("trackUserId").value || `guest-${baseSession}`, device_type: document.getElementById("trackDeviceType").value || "mobile", browser: document.getElementById("trackBrowser").value || "Chrome" };
+  const steps = [
+    { ...common, event_type: "page_view", page_name: "/landing", amount: 0, error_flag: 0 },
+    { ...common, event_type: "search", page_name: "/search?q=sneakers", amount: 0, error_flag: 0 },
+    { ...common, event_type: "product_view", page_name: "/product/412", amount: 0, error_flag: 0 },
+    { ...common, event_type: "retry", page_name: "/checkout/address", amount: 0, error_flag: 1 },
+    { ...common, event_type: "checkout", page_name: "/checkout/payment", amount: 0, error_flag: 0 }
+  ];
+  for (const step of steps) await sendTrackedEvent(step);
+}
+
+async function loadHistoricalBlock() { await Promise.all([loadKPIs(), loadFriction(), loadDevices(), loadTrend(), loadFunnel(), loadSessions()]); }
+async function loadLiveBlock() { await Promise.all([loadLiveOverview(), loadLiveTimeline(), loadLiveFeed(), loadLiveRiskSessions()]); updateTimestamp(); }
+async function boot() {
+  applySavedTheme();
+  try { await loadHistoricalBlock(); await loadLiveBlock(); }
+  catch (error) { document.getElementById("lastUpdated").textContent = error.message; }
+}
+boot();
+setInterval(loadLiveBlock, 5000);
+setInterval(loadHistoricalBlock, 45000);
 </script>
 </body>
 </html>
