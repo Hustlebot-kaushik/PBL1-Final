@@ -255,10 +255,15 @@ def score_frame(frame):
     probabilities = model.predict_proba(engineered[FEATURES])
     encoded_predictions = np.argmax(probabilities, axis=1)
     engineered["friction_level"] = le.inverse_transform(encoded_predictions)
-    engineered["friction_score"] = (1 - probabilities.max(axis=1)).round(4)
-
+    
     for index, label in enumerate(le.classes_):
         engineered[f"{label.lower()}_probability"] = probabilities[:, index].round(4)
+        
+    # Calculate a continuous friction score (0 to 1) based on weighted probabilities
+    engineered["friction_score"] = (
+        engineered.get("high_probability", 0) * 1.0 +
+        engineered.get("medium_probability", 0) * 0.5
+    ).round(4)
 
     return engineered
 
