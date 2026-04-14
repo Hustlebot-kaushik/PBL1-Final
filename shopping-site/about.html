@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rewear — About</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="about-styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-top">
+      <div class="brand">
+        <a href="homepage.html" class="brand-name small">Rewear</a>
+      </div>
+      <form class="search-form" id="search-form">
+        <input type="text" id="search-input" placeholder="Search products, brands and more..." required>
+        <button type="submit" class="search-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>
+        </button>
+      </form>
+      <nav class="nav">
+        <a href="homepage.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="about.html" class="active">About</a>
+        <a href="index.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.9rem;">Sign In</a>
+      </nav>
+    </div>
+    <div class="header-bottom">
+      <nav class="categories-nav">
+        <a href="shop.html">Best Sellers</a>
+        <a href="shop.html?category=Women">Women</a>
+        <a href="shop.html?category=Men">Men</a>
+        <a href="shop.html?category=Accessories">Accessories</a>
+        <a href="about.html">Customer Service</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero about-hero">
+      <div class="hero-inner">
+        <h1 class="hero-title">Wear the Change</h1>
+        <p class="hero-sub">Rewear brings new life to pre-loved clothing — sustainable, stylish, and soulful.</p>
+      </div>
+      <div class="hero-illustration">
+        <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=80" alt="Clothing rack" />
+      </div>
+    </section>
+
+    <section class="story">
+      <h2>Our Story</h2>
+      <p>
+        Rewear started with a simple idea: clothing should be cherished, not wasted.
+        We rescue beautiful pieces and give them a second life — reducing waste,
+        supporting local makers, and offering great styles at friendly prices.
+      </p>
+
+      <div class="mission-cards">
+        <article class="mission-card">
+          <h3>Eco-first</h3>
+          <p>We focus on sustainability at every step — from curation to packaging. Our carbon-neutral shipping and biodegradable packaging ensure minimal environmental impact.</p>
+        </article>
+
+        <article class="mission-card">
+          <h3>Community</h3>
+          <p>We partner with local tailors and charities to create value for everyone. A portion of every sale supports textile recycling initiatives in underserved communities.</p>
+        </article>
+
+        <article class="mission-card">
+          <h3>Quality</h3>
+          <p>Every piece is inspected and lovingly restored where needed. Our quality assurance process ensures you receive items that look and feel wonderful.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="testimonials-section">
+      <h2>What people say</h2>
+      <div class="testimonials">
+        <div id="testimonial-text" class="testimonial-card">"Clothes that feel new, with a soul that's renewed."</div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h3>Ready to explore?</h3>
+      <a class="btn btn-primary" href="shop.html">Visit Shop</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Rewear</h3>
+          <p>Making premium online shopping accessible to everyone.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="homepage.html">Home</a></li>
+            <li><a href="shop.html">Shop</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Customer Service</h4>
+          <ul>
+            <li><a href="shipping.html">Shipping Info</a></li>
+            <li><a href="returns.html">Returns</a></li>
+            <li><a href="size-guide.html">Size Guide</a></li>
+            <li><a href="faqs.html">FAQs</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact Info</h4>
+          <ul>
+            <li>Email: hello@rewear.com</li>
+            <li>Phone: (123) 456-7890</li>
+            <li>Address: Phase 1, Hinjewadi Rajiv Gandhi Infotech Park, Pune, Maharashtra 411057</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span id="year"></span> Rewear — Wear the Change</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="products.js"></script>
+  <script src="about-script.js"></script>
+  <script src="frictionTracker.js"></script>
+  <script src="global-tracker.js"></script>
+</body>
+</html>

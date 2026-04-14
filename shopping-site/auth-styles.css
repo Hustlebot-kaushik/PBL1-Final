@@ -1,0 +1,293 @@
+/* auth-styles.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f5f3ea, #e6e1d3);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+body::after {
+    content: "";
+    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.05;
+    z-index: 0;
+}
+
+.rewear-background {
+    position: absolute;
+    font-family: 'Great Vibes', cursive;
+    font-size: 30vw;
+    color: rgba(150, 150, 150, 0.05);
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.login-box {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+    z-index: 2;
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(to right, #52796f, #9fc6a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+}
+
+.brand-name::after {
+    content: "";
+    display: block;
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(to right, #84a98c, #52796f);
+    margin: 8px auto 0;
+    border-radius: 5px;
+    box-shadow: 0 0 8px #84a98c;
+}
+
+.tagline {
+    font-size: 16px;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.hanger-icon {
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    background-color: #e8e8e8;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #84a98c;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background-color: #52796f;
+}
+
+.google-btn {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    text-decoration: none;
+}
+
+.google-btn:hover {
+    background-color: #f8f8f8;
+}
+
+.google-btn img {
+    width: 18px;
+    height: 18px;
+}
+
+.forgot-password {
+    display: block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #52796f;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+    color: #3a5a53;
+}
+
+.testimonial {
+    position: absolute;
+    bottom: 30px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    width: 100%;
+    z-index: 2;
+    animation: fadeSlide 8s infinite;
+}
+
+@keyframes fadeSlide {
+    0%, 100% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    10%, 40% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    50%, 90% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+#forgot-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+#forgot-modal .modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+#forgot-modal h3 {
+    margin-bottom: 10px;
+    color: #52796f;
+    font-family: 'Playfair Display', serif;
+}
+
+#forgot-modal p {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+#forgot-success {
+    margin-top: 10px;
+    font-size: 14px;
+    color: green;
+    display: none;
+}
+
+#auth-container {
+    width: 100%;
+}
+
+#login-form,
+#signup-form {
+    width: 100%;
+}
+
+@media (max-width: 450px) {
+    .login-box {
+        padding: 30px 20px;
+        max-width: 90%;
+    }
+    
+    .rewear-background {
+        font-size: 100px;
+    }
+    
+    .brand-name {
+        font-size: 36px;
+    }
+    
+    .testimonial {
+        font-size: 12px;
+        bottom: 20px;
+    }
+    
+    #forgot-modal .modal-content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 350px) {
+    .login-box {
+        padding: 20px 15px;
+    }
+    
+    .brand-name {
+        font-size: 32px;
+    }
+    
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+        padding: 10px;
+    }
+    
+    .btn {
+        padding: 10px;
+    }
+}

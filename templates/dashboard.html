@@ -183,7 +183,7 @@
           Everything below is based only on tracked website sessions. The model was trained on the clickstream dataset, but the analytics shown here are live-only.
         </p>
         <div class="hero-actions">
-          <button class="btn-primary" onclick="seedDemoJourney()">Send Demo Journey</button>
+
           <button class="btn-secondary" onclick="document.getElementById('explainSessionId').focus()">Inspect Session</button>
         </div>
       </div>
@@ -321,7 +321,7 @@ const COLORS = { low: "#1c7f77", medium: "#df7f00", high: "#c81d4f", blue: "#2b5
 let frictionChart, deviceChart, trendChart, liveTimelineChart;
 
 function fmt(n) { return Number(n || 0).toLocaleString(); }
-function fmtCurrency(n) { return n > 0 ? `Rs ${Math.round(n).toLocaleString()}` : "-"; }
+function fmtCurrency(n) { return n > 0 ? `₹${Math.round(n).toLocaleString()}` : "-"; }
 function fmtDuration(seconds) { const s = Math.max(Number(seconds || 0), 0); if (s < 60) return `${s}s`; return `${Math.floor(s / 60)}m ${s % 60}s`; }
 async function fetchJSON(url, options) {
   const response = await fetch(url, options);

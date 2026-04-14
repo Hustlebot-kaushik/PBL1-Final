@@ -199,7 +199,7 @@ def load_live_model_frame(conn, session_id=None):
             COUNT(DISTINCT LOWER(COALESCE(event_type, 'unknown'))) AS distinct_event_types,
             SUM(CASE WHEN LOWER(COALESCE(event_type, '')) IN ('checkout', 'payment', 'purchase') THEN 1 ELSE 0 END) AS checkout_events,
             SUM(CASE WHEN LOWER(COALESCE(event_type, '')) = 'search' THEN 1 ELSE 0 END) AS search_events,
-            SUM(COALESCE(amount, 0)) AS revenue,
+            SUM(CASE WHEN LOWER(COALESCE(event_type, '')) = 'purchase' THEN COALESCE(amount, 0) ELSE 0 END) AS revenue,
             'guest' AS user_type
         FROM (
             SELECT
@@ -496,8 +496,8 @@ def sessions():
     if device != "all":
         frame = frame[frame["device_type"].astype(str).str.lower() == device.lower()]
 
-    frame = frame.sort_values(["friction_score", "total_errors", "total_clicks"], ascending=[False, False, False]).head(limit)
-    response = frame[["session_id", "user_id", "device_type", "browser", "dwell_time", "friction_level", "friction_score", "total_clicks", "revenue"]].copy()
+    frame = frame.sort_values(["timestamp"], ascending=[False]).head(limit)
+    response = frame[["session_id", "user_id", "device_type", "browser", "timestamp", "dwell_time", "friction_level", "friction_score", "total_clicks", "revenue"]].copy()
     response = response.rename(columns={"dwell_time": "session_duration", "total_clicks": "total_events"})
     response["session_id"] = response["session_id"].astype(int)
     response["friction_score"] = response["friction_score"].round(4)
@@ -655,7 +655,7 @@ def live_sessions():
         return jsonify([])
 
     response = (
-        scored.sort_values(["friction_score", "total_errors", "total_clicks"], ascending=[False, False, False])
+        scored.sort_values(["timestamp"], ascending=[False])
         .head(limit)[["session_id", "user_id", "device_type", "browser", "friction_level", "friction_score", "total_clicks", "total_errors", "revenue"]]
         .copy()
     )
