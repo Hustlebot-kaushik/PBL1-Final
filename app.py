@@ -730,6 +730,11 @@ def track_event():
 def dashboard():
     return render_template("dashboard.html")
 
+# NOTE:
+# Runtime scoring here is model-first. There are no hard click/error thresholds in this version.
+# So a session can still be labeled "Low" even with many clicks unless other friction signals
+# (errors/retries/backtracking/abandonment patterns) raise the model probability.
+# For local run: default port is 5000.
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, use_reloader=False)
