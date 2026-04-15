@@ -30,8 +30,9 @@ const scoreSpan = document.getElementById('friction-score');
 const indicator = document.getElementById('friction-indicator');
 const narrativeSpan = document.getElementById('friction-narrative');
 
-// Customize your API URL below to point to your friction detection project backend
-const apiUrl = "https://giant-flies-send.loca.lt/api/track";
+// Use local backend by default; allow manual override via localStorage when needed.
+const localApi = "http://127.0.0.1:5050/api/track";
+const apiUrl = localStorage.getItem('friction_api_url') || localApi;
 
 // Initialize the tracker
 window.frictionApi = createFrictionTracker({
