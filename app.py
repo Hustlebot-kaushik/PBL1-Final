@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 
@@ -254,16 +255,102 @@ def score_frame(frame):
     engineered = build_feature_frame(frame, artifact=artifact).copy()
     probabilities = model.predict_proba(engineered[FEATURES])
     encoded_predictions = np.argmax(probabilities, axis=1)
-    engineered["friction_level"] = le.inverse_transform(encoded_predictions)
+    engineered["model_level"] = le.inverse_transform(encoded_predictions)
     
     for index, label in enumerate(le.classes_):
         engineered[f"{label.lower()}_probability"] = probabilities[:, index].round(4)
         
-    # Calculate a continuous friction score (0 to 1) based on weighted probabilities
-    engineered["friction_score"] = (
+    # Base model score (0 to 1) from class probabilities.
+    model_score = (
         engineered.get("high_probability", 0) * 1.0 +
         engineered.get("medium_probability", 0) * 0.5
-    ).round(4)
+    )
+
+    # Rule calibration: promote obvious struggling sessions that the model marks too low.
+    thresholds = artifact.get("thresholds", {})
+    retry_75 = float(thresholds.get("retry_75", 0))
+    back_75 = float(thresholds.get("back_75", 0))
+    dwell_75 = float(thresholds.get("dwell_75", 0))
+    switch_75 = float(thresholds.get("switch_75", 0))
+    error_75 = float(thresholds.get("error_75", 0))
+    search_75 = float(thresholds.get("search_75", 0))
+    screen_75 = float(thresholds.get("screen_75", 0))
+
+    # Research-informed calibration:
+    # - Repeated unsuccessful actions and errors are strong frustration signals.
+    # - High effort alone can also indicate engagement, so effort is paired with failure/no-conversion context.
+    no_purchase = (engineered["purchase_count"] <= 0) & (engineered["revenue"] <= 0)
+
+    risk_points = pd.Series(np.zeros(len(engineered), dtype=float), index=engineered.index)
+
+    # Relative pressure from the training quantiles.
+    risk_points += (engineered["retry_ratio"] > retry_75).astype(float) * 1.5
+    risk_points += (engineered["backtrack_ratio"] > back_75).astype(float) * 1.25
+    risk_points += (engineered["dwell_per_click"] > dwell_75).astype(float) * 1.0
+    risk_points += (engineered["switch_ratio"] > switch_75).astype(float) * 0.75
+    risk_points += (engineered["error_rate"] > error_75).astype(float) * 1.5
+    risk_points += ((engineered["search_ratio"] > search_75) & no_purchase).astype(float) * 0.75
+    risk_points += ((engineered["screen_variety"] > screen_75) & no_purchase).astype(float) * 0.5
+
+    # Absolute signals to avoid requiring extreme behavior in live demos.
+    risk_points += (engineered["total_errors"] >= 2).astype(float) * 1.0
+    risk_points += (engineered["total_errors"] >= 5).astype(float) * 1.5
+    risk_points += (engineered["retry_count"] >= 2).astype(float) * 1.0
+    risk_points += (engineered["retry_count"] >= 4).astype(float) * 1.5
+    risk_points += (engineered["back_clicks"] >= 2).astype(float) * 1.0
+    risk_points += ((engineered["search_events"] >= 3) & no_purchase).astype(float) * 1.0
+
+    # Checkout abandonment pressure: repeated checkout without purchase should escalate quickly.
+    risk_points += ((engineered["checkout_events"] >= 1) & no_purchase).astype(float) * 1.0
+    risk_points += ((engineered["checkout_events"] >= 2) & no_purchase).astype(float) * 1.5
+    risk_points += (
+        (engineered["checkout_events"] >= 3)
+        & no_purchase
+        & (engineered["total_clicks"] >= 25)
+    ).astype(float) * 1.5
+
+    # Prolonged no-conversion sessions are likely frustrating after sustained effort.
+    risk_points += ((engineered["dwell_time"] >= 180) & no_purchase).astype(float) * 1.0
+    risk_points += ((engineered["dwell_time"] >= 420) & no_purchase).astype(float) * 1.0
+    risk_points += ((engineered["total_clicks"] >= 40) & no_purchase).astype(float) * 1.0
+    risk_points += ((engineered["total_clicks"] >= 90) & no_purchase).astype(float) * 1.0
+    risk_points += (
+        (engineered["total_clicks"] >= 100)
+        & (engineered["checkout_events"] >= 1)
+        & no_purchase
+    ).astype(float) * 1.0
+
+    # Successful conversion should de-escalate friction.
+    risk_points -= ((engineered["purchase_count"] > 0) | (engineered["revenue"] > 0)).astype(float) * 3.0
+    risk_points = risk_points.clip(lower=0.0)
+    engineered["risk_points"] = risk_points
+
+    rule_level = pd.Series("Low", index=engineered.index)
+    rule_level[risk_points >= 2.5] = "Medium"
+    rule_level[risk_points >= 5.0] = "High"
+
+    # Conversion should reduce friction, but not erase prior struggle in one jump.
+    # If a session shows clear pre-conversion struggle, keep at least Medium after purchase.
+    has_conversion = (engineered["purchase_count"] > 0) | (engineered["revenue"] > 0)
+    struggled_before_conversion = has_conversion & (
+        (engineered["checkout_events"] >= 2)
+        | (engineered["total_errors"] >= 2)
+        | (engineered["retry_count"] >= 2)
+        | (engineered["back_clicks"] >= 2)
+        | (engineered["total_clicks"] >= 80)
+    )
+    rule_level[(rule_level == "Low") & struggled_before_conversion] = "Medium"
+
+    severity = {"Low": 1, "Medium": 2, "High": 3}
+    engineered["friction_level"] = np.where(
+        rule_level.map(severity) > engineered["model_level"].map(severity),
+        rule_level,
+        engineered["model_level"],
+    )
+
+    # Final score blends model confidence with calibrated rule pressure.
+    rule_score = (risk_points / 7.0).clip(0, 1)
+    engineered["friction_score"] = np.maximum(model_score, rule_score).round(4)
 
     return engineered
 
@@ -732,4 +819,9 @@ def dashboard():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000, use_reloader=False)
+    app.run(
+        host="127.0.0.1",
+        port=int(os.getenv("PORT", "5050")),
+        debug=False,
+        use_reloader=False,
+    )
